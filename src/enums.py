@@ -14,6 +14,10 @@ class Optimizer(enum.Enum):
 class Scheduler(enum.Enum):
     StepLR = 0
 
+class Model(enum.Enum):
+    ResNet18 = 0
+    OriginalCNN = 1
+
 if __name__=="__main__":
     print(Mode.Train)
 

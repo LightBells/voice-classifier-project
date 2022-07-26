@@ -53,4 +53,7 @@ CFG= {
     "train_dir"        : "../res/preprocessed_data/train",
     "valid_dir"        : "../res/preprocessed_data/validation",
     "test_dir"         : "../res/preprocessed_data/test",
+
+    "seed"             : 12,
+    "model"            : enums.Model.ResNet18
 }

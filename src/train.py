@@ -1,13 +1,24 @@
-from models import Net
+from models import ResNet18, OriginalCNN
 from transforms import getTransforms
 from dataset import VoiceDataset
 from config import CFG
+from utils.seed import seed_torch
 import enums
+
+import numpy as np
 
 import torch
 import torch.optim as optim
 import torch.nn as nn
 from torch.utils.data import DataLoader
+from torch.utils.tensorboard import SummaryWriter
+
+from sklearn.metrics import (
+        accuracy_score,
+        f1_score,
+        recall_score,
+        precision_score
+)
 
 def train_fn(
         epoch, model, data_loader, optimizer, scheduler, criterion, device
@@ -43,6 +54,9 @@ def train_fn(
             running_loss = 0.0
 
     print(f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Total Loss Avg: {total_loss/len(data_loader)} Total Accuracy: {correct/total}")
+
+    writer.add_scalar('Loss/train', total_loss/len(data_loader), epoch)
+    writer.add_scalar('Accuracy/train', correct/total, epoch)
     return model, (total_loss/len(data_loader)), correct/total
 
 def valid_fn(
@@ -72,6 +86,8 @@ def valid_fn(
 
     print(f"Validation:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Total Loss Avg: {total_loss/len(data_loader)} Total Accuracy: {correct/total}")
 
+    writer.add_scalar('Loss/valid', total_loss/len(data_loader), epoch)
+    writer.add_scalar('Accuracy/vaild', correct/total, epoch)
     return model, (total_loss/len(data_loader)), correct/total
 
 
@@ -86,6 +102,7 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
 
 
     best_loss = 10000.0
+    best_weight = None
     early_stopping = CFG["early_stopping"]
     for epoch in range(1, epochs+1):
         model, train_loss, accuracy = train_fn(epoch, model, 
@@ -96,6 +113,7 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
         if valid_loss < best_loss:
             torch.save(model, "best_model.pth")
             best_loss = valid_loss
+            best_weight = model.state_dict()
             print(f"Best Loss is Upgated to {valid_loss}")
             early_stopping = CFG["early_stopping"]
         else:
@@ -104,15 +122,53 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
         if early_stopping <= 0:
             break
         
+    model.load_state_dict(best_weight)
+    return model
 
-def test(model):
+def test(model, device):
+    test_ds     = VoiceDataset(CFG["test_dir"], transforms=getTransforms(mode=enums.Mode.Test))
+    data_loader = DataLoader(test_ds, batch_size=8, shuffle= False)
+
     model.eval()
+    predictions = []
+    actual      = []
+    for idx, (x, d) in enumerate(data_loader):
+        x, d = x.to(device), d.to(device)
+        with torch.no_grad():
+            y = model(x)
+
+        preds = torch.softmax(y, dim=1)
+        predictions.append(preds.argmax(dim=1).to("cpu").detach().numpy())
+        actual.append(d.to("cpu").numpy())
+
+    actual = np.concatenate(actual)
+    predictions = np.concatenate(predictions)
+
+    print(actual)
+    print(predictions)
+
+    metrices = {
+            "accuracy" : accuracy_score(actual, predictions),
+            "micro/precision": precision_score(actual, predictions, average="micro"),
+            "micro/recall"   : recall_score(actual, predictions, average="micro"),
+            "micro/f1_score" : recall_score(actual, predictions, average="micro"),
+            "macro/precision": precision_score(actual, predictions, average="macro"),
+            "macro/recall"   : recall_score(actual, predictions, average="macro"),
+            "macro/f1_score" : recall_score(actual, predictions, average="macro")
+    }
+
+    return metrices
 
 
 def main():
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    model = Net(CFG["out_classes"])
+    if CFG["model"] == enums.Model.ResNet18:
+        model = ResNet18(CFG["out_classes"])
+    elif CFG["model"] == enums.Model.OriginalCNN:
+        model = OriginalCNN(CFG["out_classes"])
+    else:
+        raise NotImplementedError("The Model is not Impemented")
     model.to(device)
     
     # Optimizer Initialize
@@ -137,8 +193,15 @@ def main():
 
     model = fit(model, CFG["epochs"], optimizer, scheduler, criterion, device)
 
-    metrices = test(model)
+    metrices = test(model, device)
     print(metrices)
 
 if __name__=="__main__":
+    seed_torch(CFG["seed"])
+    writer = SummaryWriter()
+
+    # Record Settings and Hyper parameters
+    for key in CFG:
+        writer.add_text(key, str(CFG[key]), 0)
+
     main()
