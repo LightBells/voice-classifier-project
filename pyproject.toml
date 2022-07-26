@@ -2,20 +2,26 @@
 name = "voice-classifier"
 version = "0.1.0"
 description = "A voice classifier software for a project in Practical Deeplearning"
-authors = ["Lightbells <takahasi0928@gmail.com>"]
+authors = ["Hikaru Takahashi <takahasi0928@gmail.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
 numpy = "==1.22.0"
-torch = "^1.12.0"
-torchvision = "^0.13.0"
-torchaudio = "^0.12.0"
 tqdm = "^4.64.0"
 pandas = "^1.4.3"
-librosa = "==0.7.0"
+librosa = "^0.7.0"
+timm = "^0.6.5"
+tensorboard = "^2.9.1"
+torch = {version = "1.12.0+cu116", source = "pytorch-cu116"}
+torchvision = "0.12.0"
 
 [tool.poetry.dev-dependencies]
+
+[[tool.poetry.source]]
+name = "pytorch-cu116"
+url = "https://download.pytorch.org/whl/cu116/"
+secondary = true
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
