@@ -44,7 +44,7 @@ def calculate_melsp(x, n_fft=1024, hop_length=128):
 
 # Create Data folders 
 min_value = 2641760
-folders = ["train", "test"]
+folders = [ "test"]
 for folder in folders:
     dir_name = os.path.join(args.target_dir, folder)
     if not os.path.exists(dir_name):
@@ -55,7 +55,12 @@ for folder in folders:
         if not os.path.exists(speaker_dir_name):
             os.mkdir(speaker_dir_name)
 
-    for idx, row in tqdm(metadata.iterrows()):
+    if folder == "train":
+        data = metadata
+    else:
+        data = metadata_test
+
+    for idx, row in tqdm(data.iterrows()):
         file_path = os.path.join(args.prefix, row["path"])
         speaker_id = row["speaker_id"]
         speaker_dir_name = os.path.join(dir_name, str(speaker_id))
