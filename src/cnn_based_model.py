@@ -22,7 +22,7 @@ class Unit(nn.Module):
         x = self.relu(x)
         return x
 
-class Net_(nn.Module):
+class Net(nn.Module):
     def __init__(self, out_classes):
         super(Net, self).__init__()
 
