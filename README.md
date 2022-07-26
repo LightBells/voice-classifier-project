@@ -13,16 +13,15 @@ Proposals are shown [here](./docs/proposal.md)
 ## Usage
 
 ### Prepare Environment
-1. Install [Poetry](https://python-poetry.org/docs/).
-1. Install dependency packages via poetry by executing `poetry install` command.
-1. Enter poetry shell by executing `poetry shell` command.
+1. Execute the dependencies installation command `pip install -r ./requirements.txt --find-links https://download.pytorch.org/whl/torch_stable.html` on Project Root in arbitary virtual env.
 
 ### Prepare Dataset
 1. Download voice dataset from [Here](https://www.kaggle.com/datasets/vjcalling/speaker-recognition-audio-dataset).
 1. Extract the files into `res` folder. (e.g. `unzip -d speaker-recognition speaker-recognition-audio-dataset.zip`)
-1. Execute re-format command on Project Root. The re-format command should be run in poetry shell.   
+1. Execute re-format command on Project Root.   
   The command is `python src/utils/converter.py ./res/{extracted_dir_name}` (e.g.`python src/utils/converter.py ./res/speaker-recognition/`).
-1. Execute metadata creatation command on Project Root in poetry shell. The command is `python src/utils/metadata_generator.py`
+1. Execute metadata creatation command on Project Root.  
+  The command is `python src/utils/metadata_generator.py`
 1. Create the folder to store preprocessed data.  
   `mkdir ./res/preprocessed_data`
 1. Execute file check and preparation command. The command is `python src/utils/split_and_create_melspectrum.py`. 
