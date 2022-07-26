@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 metadata = pd.read_csv(args.metadata)
 metadata_test = metadata[metadata.audio_file_id == 10]
+metadata_valid = metadata[metadata.audio_file_id == 11]
 metadata = metadata[metadata.audio_file_id < 10]
 
 # Output metadata
@@ -44,7 +45,7 @@ def calculate_melsp(x, n_fft=1024, hop_length=128):
 
 # Create Data folders 
 min_value = 2641760
-folders = [ "test"]
+folders = ["train", "test", "validation"]
 for folder in folders:
     dir_name = os.path.join(args.target_dir, folder)
     if not os.path.exists(dir_name):
@@ -57,8 +58,10 @@ for folder in folders:
 
     if folder == "train":
         data = metadata
-    else:
+    elif folder == "test":
         data = metadata_test
+    elif folder == "validation":
+        data = metadata_valid
 
     for idx, row in tqdm(data.iterrows()):
         file_path = os.path.join(args.prefix, row["path"])
