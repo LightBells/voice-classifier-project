@@ -16,7 +16,8 @@ class Scheduler(enum.Enum):
 
 class Model(enum.Enum):
     ResNet18 = 0
-    OriginalCNN = 1
+    ResNet50 = 1
+    OriginalCNN = 2
 
 if __name__=="__main__":
     print(Mode.Train)

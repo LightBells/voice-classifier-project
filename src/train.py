@@ -1,4 +1,4 @@
-from models import ResNet18, OriginalCNN
+from models import ResNet18, OriginalCNN, ResNet50
 from transforms import getTransforms
 from dataset import VoiceDataset
 from config import CFG
@@ -93,11 +93,11 @@ def valid_fn(
 
 def fit(model, epochs, optimizer, scheduler, criterion, device):
     train_ds     = VoiceDataset(CFG["train_dir"], transforms=getTransforms(mode=enums.Mode.Train))
-    train_loader = DataLoader(train_ds, batch_size=8, 
+    train_loader = DataLoader(train_ds, batch_size=CFG["train_batch_size"], 
             shuffle=True, num_workers=2)
 
     valid_ds     = VoiceDataset(CFG["valid_dir"], transforms=getTransforms(mode=enums.Mode.Test))
-    valid_loader = DataLoader(valid_ds, batch_size=8, 
+    valid_loader = DataLoader(valid_ds, batch_size=CFG["test_batch_size"], 
             shuffle=False, num_workers=2)
 
 
@@ -127,7 +127,7 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
 
 def test(model, device):
     test_ds     = VoiceDataset(CFG["test_dir"], transforms=getTransforms(mode=enums.Mode.Test))
-    data_loader = DataLoader(test_ds, batch_size=8, shuffle= False)
+    data_loader = DataLoader(test_ds, batch_size=CFG["test_batch_size"], shuffle= False)
 
     model.eval()
     predictions = []
@@ -167,6 +167,8 @@ def main():
         model = ResNet18(CFG["out_classes"])
     elif CFG["model"] == enums.Model.OriginalCNN:
         model = OriginalCNN(CFG["out_classes"])
+    elif CFG["model"] == enums.Model.ResNet50:
+        model = ResNet50(CFG["out_classes"])
     else:
         raise NotImplementedError("The Model is not Impemented")
     model.to(device)

@@ -50,10 +50,13 @@ CFG= {
     "optimizer_config" : AdamConfig(lr=0.05, amsgrad=True),
     "scheduler_config" : None,
 
+    "train_batch_size" : 4,
+    "test_batch_size"  : 4,
+
     "train_dir"        : "../res/preprocessed_data/train",
     "valid_dir"        : "../res/preprocessed_data/validation",
     "test_dir"         : "../res/preprocessed_data/test",
 
     "seed"             : 12,
-    "model"            : enums.Model.ResNet18
+    "model"            : enums.Model.ResNet50
 }
