@@ -223,11 +223,16 @@ def main():
     else:
         raise NotImplementedError("The optimizer is not Impemented")
 
+    from schedulers import LinearCyclicalLR
     # Scheduler Initialize
     if CFG["scheduler"] is None:
         scheduler = None
     elif CFG["scheduler"] == enums.Scheduler.StepLR:
         scheduler = optim.lr_scheduler.StepLR(
+            optimizer, **CFG["scheduler_config"].get_parameters()
+        )
+    elif CFG["scheduler"] == enums.Scheduler.LinearCyclicalLR:
+        scheduler = LinearCyclicalLR(
             optimizer, **CFG["scheduler_config"].get_parameters()
         )
     else:

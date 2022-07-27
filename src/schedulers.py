@@ -10,7 +10,7 @@ class LinearCyclicalLR(_LRScheduler):
     def get_lr(self):
         last_step = self.last_epoch % self.T_max
         point = self.T_max // 2
-        return [
+        lrs = [
             -(base_lr - self.eta_min) * last_step / (point - 0.5) + base_lr
             if last_step < point
             else (base_lr - self.eta_min) * last_step / (point - 0.5)
@@ -18,3 +18,4 @@ class LinearCyclicalLR(_LRScheduler):
             - base_lr
             for base_lr in self.base_lrs
         ]
+        return lrs

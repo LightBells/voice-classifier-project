@@ -17,6 +17,7 @@ class Optimizer(enum.Enum):
 
 class Scheduler(enum.Enum):
     StepLR = 0
+    LinearCyclicalLR = 1
 
 
 class Model(enum.Enum):
