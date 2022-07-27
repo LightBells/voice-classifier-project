@@ -111,7 +111,7 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
         model, valid_loss, valid_accuracy = valid_fn(epoch, model,
                 valid_loader, criterion, device)
         if valid_loss < best_loss:
-            torch.save(model, "best_model.pth")
+            torch.save(model.state_dict(), "best_model.pth")
             best_loss = valid_loss
             best_weight = model.state_dict()
             print(f"Best Loss is Upgated to {valid_loss}")
