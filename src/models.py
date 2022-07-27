@@ -30,6 +30,20 @@ class ResNet50(nn.Module):
         x = self.model(x)
         return x
 
+class EfficientNetB0(nn.Module):
+    def __init__(self, out_classes):
+        super(EfficientNetB0, self).__init__()
+        self.model = timm.create_model('efficientnet_b0')
+        output_channels = self.model.conv_stem.out_channels
+        self.model.conv_stem = nn.Conv2d(1, output_channels,kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+
+        in_features = self.model.classifier.in_features
+        self.model.classifier = nn.Linear(in_features, out_classes)
+
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
 class Flatten(nn.Module):
     def __init__(self):
         super(Flatten, self).__init__()

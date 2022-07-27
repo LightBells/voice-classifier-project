@@ -1,4 +1,4 @@
-from models import ResNet18, OriginalCNN, ResNet50
+from models import ResNet18, OriginalCNN, ResNet50, EfficientNetB0
 from transforms import getTransforms
 from dataset import VoiceDataset
 from config import CFG
@@ -46,12 +46,12 @@ def train_fn(
         running_loss += loss.item()
 
 
-        if scheduler is not None:
-            scheduler.step()
-
         if idx % 16 == 15:
             print(f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Running Loss Avg: {running_loss/16} Accuracy: {correct/total}")
             running_loss = 0.0
+
+    if scheduler is not None:
+        scheduler.step()
 
     print(f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Total Loss Avg: {total_loss/len(data_loader)} Total Accuracy: {correct/total}")
 
@@ -165,10 +165,12 @@ def main():
 
     if CFG["model"] == enums.Model.ResNet18:
         model = ResNet18(CFG["out_classes"])
-    elif CFG["model"] == enums.Model.OriginalCNN:
-        model = OriginalCNN(CFG["out_classes"])
     elif CFG["model"] == enums.Model.ResNet50:
         model = ResNet50(CFG["out_classes"])
+    elif CFG["model"] == enums.Model.EfficientNetB0:
+        model = EfficientNetB0(CFG["out_classes"])
+    elif CFG["model"] == enums.Model.OriginalCNN:
+        model = OriginalCNN(CFG["out_classes"])
     else:
         raise NotImplementedError("The Model is not Impemented")
     model.to(device)

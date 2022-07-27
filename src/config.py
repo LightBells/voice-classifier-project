@@ -47,7 +47,7 @@ CFG= {
     "criterion"        : enums.Criterion.CrossEntropy,
     "epochs"           : 100,
     "early_stopping"   : 3,
-    "optimizer_config" : AdamConfig(lr=0.05, amsgrad=True),
+    "optimizer_config" : AdamConfig(lr=0.003, amsgrad=True),
     "scheduler_config" : None,
 
     "train_batch_size" : 4,
@@ -58,5 +58,5 @@ CFG= {
     "test_dir"         : "../res/preprocessed_data/test",
 
     "seed"             : 12,
-    "model"            : enums.Model.ResNet50
+    "model"            : enums.Model.EfficientNetB0
 }
