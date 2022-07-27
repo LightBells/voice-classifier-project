@@ -8,6 +8,7 @@ parser.add_argument("output_classes", type=int)
 args = parser.parse_args()
 
 import torch
+from train import test
 
 if __name__=="__main__":
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
