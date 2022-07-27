@@ -14,14 +14,15 @@ from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from sklearn.metrics import (
-        accuracy_score,
-        f1_score,
-        recall_score,
-        precision_score
+    accuracy_score,
+    f1_score,
+    recall_score,
+    precision_score,
 )
 
+
 def train_fn(
-        epoch, model, data_loader, optimizer, scheduler, criterion, device
+    epoch, model, data_loader, optimizer, scheduler, criterion, device
 ):
     total_loss = 0.0
     running_loss = 0.0
@@ -45,23 +46,28 @@ def train_fn(
         total_loss += loss.item()
         running_loss += loss.item()
 
-
         if idx % 16 == 15:
-            print(f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Running Loss Avg: {running_loss/16} Accuracy: {correct/total}")
+            print(
+                f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, \
+                Running Loss Avg: {running_loss/16} Accuracy: {correct/total}"
+            )
             running_loss = 0.0
 
     if scheduler is not None:
         scheduler.step()
 
-    print(f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Total Loss Avg: {total_loss/len(data_loader)} Total Accuracy: {correct/total}")
+    print(
+        f"Train:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, \
+        Total Loss Avg: {total_loss/len(data_loader)} \
+        Total Accuracy: {correct/total}"
+    )
 
-    writer.add_scalar('Loss/train', total_loss/len(data_loader), epoch)
-    writer.add_scalar('Accuracy/train', correct/total, epoch)
-    return model, (total_loss/len(data_loader)), correct/total
+    writer.add_scalar("Loss/train", total_loss / len(data_loader), epoch)
+    writer.add_scalar("Accuracy/train", correct / total, epoch)
+    return model, (total_loss / len(data_loader)), correct / total
 
-def valid_fn(
-        epoch, model, data_loader, criterion, device
-):
+
+def valid_fn(epoch, model, data_loader, criterion, device):
     total_loss = 0.0
     running_loss = 0.0
     total = 0
@@ -81,35 +87,56 @@ def valid_fn(
         running_loss += loss.item()
 
         if idx % 16 == 15:
-            print(f"Validation:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Running Loss Avg: {running_loss/16} Accuracy: {correct/total}")
+            print(
+                f"Validation:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, \
+                        Running Loss Avg: {running_loss/16} \
+                        Accuracy: {correct/total}"
+            )
             running_loss = 0.0
 
-    print(f"Validation:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, Total Loss Avg: {total_loss/len(data_loader)} Total Accuracy: {correct/total}")
+    print(
+        f"Validation:: Epoch {epoch}, Batch {idx}/{len(data_loader)}, \
+                Total Loss Avg: {total_loss/len(data_loader)} \
+                Total Accuracy: {correct/total}"
+    )
 
-    writer.add_scalar('Loss/valid', total_loss/len(data_loader), epoch)
-    writer.add_scalar('Accuracy/vaild', correct/total, epoch)
-    return model, (total_loss/len(data_loader)), correct/total
+    writer.add_scalar("Loss/valid", total_loss / len(data_loader), epoch)
+    writer.add_scalar("Accuracy/vaild", correct / total, epoch)
+    return model, (total_loss / len(data_loader)), correct / total
 
 
 def fit(model, epochs, optimizer, scheduler, criterion, device):
-    train_ds     = VoiceDataset(CFG["train_dir"], transforms=getTransforms(mode=enums.Mode.Train))
-    train_loader = DataLoader(train_ds, batch_size=CFG["train_batch_size"], 
-            shuffle=True, num_workers=2)
+    train_ds = VoiceDataset(
+        CFG["train_dir"], transforms=getTransforms(mode=enums.Mode.Train)
+    )
+    train_loader = DataLoader(
+        train_ds,
+        batch_size=CFG["train_batch_size"],
+        shuffle=True,
+        num_workers=2,
+    )
 
-    valid_ds     = VoiceDataset(CFG["valid_dir"], transforms=getTransforms(mode=enums.Mode.Test))
-    valid_loader = DataLoader(valid_ds, batch_size=CFG["test_batch_size"], 
-            shuffle=False, num_workers=2)
-
+    valid_ds = VoiceDataset(
+        CFG["valid_dir"], transforms=getTransforms(mode=enums.Mode.Test)
+    )
+    valid_loader = DataLoader(
+        valid_ds,
+        batch_size=CFG["test_batch_size"],
+        shuffle=False,
+        num_workers=2,
+    )
 
     best_loss = 10000.0
     best_weight = None
     early_stopping = CFG["early_stopping"]
-    for epoch in range(1, epochs+1):
-        model, train_loss, accuracy = train_fn(epoch, model, 
-                train_loader,optimizer, scheduler, criterion, device)
+    for epoch in range(1, epochs + 1):
+        model, train_loss, accuracy = train_fn(
+            epoch, model, train_loader, optimizer, scheduler, criterion, device
+        )
 
-        model, valid_loss, valid_accuracy = valid_fn(epoch, model,
-                valid_loader, criterion, device)
+        model, valid_loss, valid_accuracy = valid_fn(
+            epoch, model, valid_loader, criterion, device
+        )
         if valid_loss < best_loss:
             torch.save(model.state_dict(), "best_model.pth")
             best_loss = valid_loss
@@ -121,17 +148,22 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
 
         if early_stopping <= 0:
             break
-        
+
     model.load_state_dict(best_weight)
     return model
 
+
 def test(model, device):
-    test_ds     = VoiceDataset(CFG["test_dir"], transforms=getTransforms(mode=enums.Mode.Test))
-    data_loader = DataLoader(test_ds, batch_size=CFG["test_batch_size"], shuffle= False)
+    test_ds = VoiceDataset(
+        CFG["test_dir"], transforms=getTransforms(mode=enums.Mode.Test)
+    )
+    data_loader = DataLoader(
+        test_ds, batch_size=CFG["test_batch_size"], shuffle=False
+    )
 
     model.eval()
     predictions = []
-    actual      = []
+    actual = []
     for idx, (x, d) in enumerate(data_loader):
         x, d = x.to(device), d.to(device)
         with torch.no_grad():
@@ -147,21 +179,29 @@ def test(model, device):
     print(actual)
     print(predictions)
 
-    metrices = {
-            "accuracy" : accuracy_score(actual, predictions),
-            "micro/precision": precision_score(actual, predictions, average="micro"),
-            "micro/recall"   : recall_score(actual, predictions, average="micro"),
-            "micro/f1_score" : recall_score(actual, predictions, average="micro"),
-            "macro/precision": precision_score(actual, predictions, average="macro"),
-            "macro/recall"   : recall_score(actual, predictions, average="macro"),
-            "macro/f1_score" : recall_score(actual, predictions, average="macro")
+    metrics = {
+        "accuracy": accuracy_score(actual, predictions),
+        "micro/precision": precision_score(
+            actual, predictions, average="micro"
+        ),
+        "micro/recall": recall_score(actual, predictions, average="micro"),
+        "micro/f1_score": f1_score(actual, predictions, average="micro"),
+        "macro/precision": precision_score(
+            actual, predictions, average="macro"
+        ),
+        "macro/recall": recall_score(actual, predictions, average="macro"),
+        "macro/f1_score": f1_score(actual, predictions, average="macro"),
     }
 
-    return metrices
+    return metrics
 
 
 def main():
-    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    device = (
+        torch.device("cuda")
+        if torch.cuda.is_available()
+        else torch.device("cpu")
+    )
 
     if CFG["model"] == enums.Model.ResNet18:
         model = ResNet18(CFG["out_classes"])
@@ -174,10 +214,12 @@ def main():
     else:
         raise NotImplementedError("The Model is not Impemented")
     model.to(device)
-    
+
     # Optimizer Initialize
     if CFG["optimizer"] == enums.Optimizer.Adam:
-        optimizer = optim.Adam(model.parameters(), **CFG["optimizer_config"].get_parameters())
+        optimizer = optim.Adam(
+            model.parameters(), **CFG["optimizer_config"].get_parameters()
+        )
     else:
         raise NotImplementedError("The optimizer is not Impemented")
 
@@ -185,10 +227,12 @@ def main():
     if CFG["scheduler"] is None:
         scheduler = None
     elif CFG["scheduler"] == enums.Scheduler.StepLR:
-        scheduler = optim.lr_scheduler.StepLR(optimizer, **CFG["scheduler_config"].get_parameters())
+        scheduler = optim.lr_scheduler.StepLR(
+            optimizer, **CFG["scheduler_config"].get_parameters()
+        )
     else:
         raise NotImplementedError("The scheduler is not Impemented")
-    
+
     # Criterion Setting
     if CFG["criterion"] == enums.Criterion.CrossEntropy:
         criterion = nn.CrossEntropyLoss()
@@ -197,10 +241,11 @@ def main():
 
     model = fit(model, CFG["epochs"], optimizer, scheduler, criterion, device)
 
-    metrices = test(model, device)
-    print(metrices)
+    metrics = test(model, device)
+    print(metrics)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     seed_torch(CFG["seed"])
     writer = SummaryWriter()
 

@@ -1,15 +1,35 @@
 import argparse
 import os
 
-parser = argparse.ArgumentParser(description="Voice Cutter")
-parser.add_argument("--metadata", type = str, help="Specify a metadata(csv)", default="res/speaker-recognition/metadata.csv")
-parser.add_argument("--target_dir", type = str, help="Specify a target directory", default="res/preprocessed_data/")
-parser.add_argument("--prefix", type=str, default="./", help="Specify a prefix to adjust difference between the path on metadata file and running environment")
-args = parser.parse_args()
-
-
 import pandas as pd
 import numpy as np
+
+from tqdm import tqdm
+import librosa
+import librosa.display
+
+parser = argparse.ArgumentParser(description="Voice Cutter")
+parser.add_argument(
+    "--metadata",
+    type=str,
+    help="Specify a metadata(csv)",
+    default="res/speaker-recognition/metadata.csv",
+)
+parser.add_argument(
+    "--target_dir",
+    type=str,
+    help="Specify a target directory",
+    default="res/preprocessed_data/",
+)
+parser.add_argument(
+    "--prefix",
+    type=str,
+    default="./",
+    help="Specify a prefix to adjust difference between the path\
+            on metadata file and running environment",
+)
+args = parser.parse_args()
+
 metadata = pd.read_csv(args.metadata)
 metadata_test = metadata[metadata.audio_file_id == 10]
 metadata_valid = metadata[metadata.audio_file_id == 11]
@@ -22,28 +42,26 @@ print("Data Size: ", data_size)
 unique_speakers = metadata.speaker_id.unique()
 print("Speaker IDs: ", unique_speakers)
 
-from tqdm import tqdm
 
 # ========== Utils ==============
-import librosa
-import librosa.display
-import matplotlib.pyplot as plt
-
 # load a wave data
 def load_wave_data(file_name):
     x, fs = librosa.load(file_path, sr=44100)
-    return x,fs
+    return x, fs
+
 
 # change wave data to mel-stft
 def calculate_melsp(x, n_fft=1024, hop_length=128):
-    stft = np.abs(librosa.stft(x, n_fft=n_fft, hop_length=hop_length))**2
+    stft = np.abs(librosa.stft(x, n_fft=n_fft, hop_length=hop_length)) ** 2
     log_stft = librosa.power_to_db(stft)
-    melsp = librosa.feature.melspectrogram(S=log_stft,n_mels=128)
+    melsp = librosa.feature.melspectrogram(S=log_stft, n_mels=128)
     return melsp
+
+
 # ===============================
 
 
-# Create Data folders 
+# Create Data folders
 min_value = 2641760
 folders = ["train", "test", "validation"]
 for folder in folders:
@@ -71,7 +89,6 @@ for folder in folders:
         filename_with_extention = row["filename"]
         filename = row["filename"][:-4]
 
-        
         try:
             wave_file, fs = load_wave_data(file_path)
         except Exception as e:
@@ -82,5 +99,7 @@ for folder in folders:
             files = np.array_split(wave_file, 10)
             for idx, file in enumerate(files):
                 melsp = calculate_melsp(file)
-                np.save(os.path.join(speaker_dir_name, filename+"_"+str(idx)), melsp)
-
+                np.save(
+                    os.path.join(speaker_dir_name, filename + "_" + str(idx)),
+                    melsp,
+                )
