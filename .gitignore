@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Ignore model weights
+*.pth
+
+# Ignore Tensorboard log files
+runs
