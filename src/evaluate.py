@@ -1,5 +1,9 @@
 from train import test
 from models import ResNet18, ResNet50, OriginalCNN, EfficientNetB0
+from dataset import VoiceDataset
+from transforms import getTransforms
+from enums import Mode
+from config import CFG
 
 import argparse
 import torch
@@ -37,6 +41,9 @@ if __name__ == "__main__":
     weight = torch.load(args.weight_path)
     model.load_state_dict(weight)
     model.to(device)
+
+    test_ds = VoiceDataset(CFG["test_dir"],
+                           transforms=getTransforms(mode=Mode.Test))
 
     metrics, result = test(model, device)
 

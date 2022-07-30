@@ -1,4 +1,5 @@
 from models import ResNet18, OriginalCNN, ResNet50, EfficientNetB0
+
 from transforms import getTransforms
 from dataset import VoiceDataset
 from config import CFG
@@ -153,10 +154,7 @@ def fit(model, epochs, optimizer, scheduler, criterion, device):
     return model
 
 
-def test(model, device):
-    test_ds = VoiceDataset(
-        CFG["test_dir"], transforms=getTransforms(mode=enums.Mode.Test)
-    )
+def test(model, test_ds, device):
     data_loader = DataLoader(
         test_ds, batch_size=CFG["test_batch_size"], shuffle=False
     )
@@ -249,7 +247,10 @@ def main():
 
     model = fit(model, CFG["epochs"], optimizer, scheduler, criterion, device)
 
-    metrics, results = test(model, device)
+    test_ds = VoiceDataset(
+        CFG["test_dir"], transforms=getTransforms(mode=enums.Mode.Test)
+    )
+    metrics, results = test(model, test_ds, device)
     print(metrics)
 
 
