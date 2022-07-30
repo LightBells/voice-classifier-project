@@ -38,6 +38,6 @@ if __name__ == "__main__":
     model.load_state_dict(weight)
     model.to(device)
 
-    metrics = test(model, device)
+    metrics, result = test(model, device)
 
     print(metrics)

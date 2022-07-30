@@ -164,6 +164,7 @@ def test(model, device):
     model.eval()
     predictions = []
     actual = []
+    features = []
     for idx, (x, d) in enumerate(data_loader):
         x, d = x.to(device), d.to(device)
         with torch.no_grad():
@@ -171,10 +172,12 @@ def test(model, device):
 
         preds = torch.softmax(y, dim=1)
         predictions.append(preds.argmax(dim=1).to("cpu").detach().numpy())
+        features.append(preds.to("cpu").detach().numpy())
         actual.append(d.to("cpu").numpy())
 
     actual = np.concatenate(actual)
     predictions = np.concatenate(predictions)
+    features = np.concatenate(features)
 
     print(actual)
     print(predictions)
@@ -193,7 +196,7 @@ def test(model, device):
         "macro/f1_score": f1_score(actual, predictions, average="macro"),
     }
 
-    return metrics
+    return metrics, (actual, predictions, features)
 
 
 def main():
@@ -246,7 +249,7 @@ def main():
 
     model = fit(model, CFG["epochs"], optimizer, scheduler, criterion, device)
 
-    metrics = test(model, device)
+    metrics, results = test(model, device)
     print(metrics)
 
 
