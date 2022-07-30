@@ -67,7 +67,7 @@ class AdamConfig(OptimizerConfig):
 CFG = {
     "out_classes": 43,
     "optimizer": enums.Optimizer.Adam,
-    "optimizer_config": AdamConfig(lr=0.1, amsgrad=True),
+    "optimizer_config": AdamConfig(lr=0.003, amsgrad=True),
     "scheduler": None,
     "scheduler_config": None,
     "criterion": enums.Criterion.CrossEntropy,
@@ -79,5 +79,5 @@ CFG = {
     "valid_dir": "../res/preprocessed_data/validation",
     "test_dir": "../res/preprocessed_data/test",
     "seed": 12,
-    "model": enums.Model.EfficientNetB0,
+    "model": enums.Model.ResNet18,
 }
