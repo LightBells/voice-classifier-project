@@ -48,9 +48,9 @@ if __name__ == "__main__":
     test_ds = VoiceDataset(CFG["test_dir"],
                            transforms=getTransforms(mode=Mode.Test))
 
-    metrics, result = test(model, device)
+    metrics, result = test(model, test_ds, device)
 
-    pprint(metrics)
+    pprint.pprint(metrics)
 
     correct = np.sum(result[0] == result[1])
     all = len(result[0])
