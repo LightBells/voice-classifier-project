@@ -7,6 +7,9 @@ from config import CFG
 
 import argparse
 import torch
+import numpy as np
+
+import pprint
 
 parser = argparse.ArgumentParser(description="model evaluation script.")
 parser.add_argument(
@@ -47,4 +50,8 @@ if __name__ == "__main__":
 
     metrics, result = test(model, device)
 
-    print(metrics)
+    pprint(metrics)
+
+    correct = np.sum(result[0] == result[1])
+    all = len(result[0])
+    print(f"Correct/ALL: {correct}/{all}")

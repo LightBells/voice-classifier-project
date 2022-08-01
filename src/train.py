@@ -177,9 +177,6 @@ def test(model, test_ds, device):
     predictions = np.concatenate(predictions)
     features = np.concatenate(features)
 
-    print(actual)
-    print(predictions)
-
     metrics = {
         "accuracy": accuracy_score(actual, predictions),
         "micro/precision": precision_score(
